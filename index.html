@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>webplayer</title>
+<style>
+* {margin:0;padding:0;box-sizing:border-box;}
+html,body {width:100%;height:100%;background-color:#000;overflow:hidden;}
+.dplayer {width:100%;height:100%;display:flex;justify-content:center;align-items:center;}
+.dplayer-info-panel-item-url {display:none !important;} 
+</style>
+</head>
+<body>
+<div id="player" class="dplayer"></div>
+<script>
+        // 防止右键菜单和文本选择
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+        document.addEventListener('selectstart', (e) => e.preventDefault());
+        
+        // Base64解码函数
+        const decodeBase64 = (str) => {
+            try {
+                return atob(str);
+            } catch (e) {
+                console.error('Base64解码失败:', e);
+                return null;
+            }
+        };
+        
+        // 检查是否为有效的Base64字符串
+        const isBase64 = (str) => {
+            if (!str || typeof str !== 'string') return false;
+            return /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(str);
+        };
+        
+        // 获取视频URL
+        const getVideoUrl = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            let videoUrl = urlParams.get('url');
+            
+            if (!videoUrl) {
+                return null;
+            }
+            
+            // 如果是Base64编码的URL，进行解码
+            if (isBase64(videoUrl)) {
+                const decodedUrl = decodeBase64(videoUrl);
+                if (decodedUrl) {
+                    return decodedUrl;
+                }
+            }
+            
+            return videoUrl;
+        };
+        
+        // 初始化播放器
+        const initPlayer = () => {
+            const videoUrl = getVideoUrl();
+            const playerElement = document.getElementById('player');
+            
+            if (!videoUrl) {
+                playerElement.innerHTML = '<div style="color: #fff; text-align: center; padding: 20px;">请输入有效的视频URL地址</div>';
+                return;
+            }
+            
+            try {
+                const dp = new DPlayer({
+                    element: playerElement,
+                    autoplay: true,
+                    mutex: true,
+                    video: {
+                        url: videoUrl,
+                        pic: './js/loading.gif'
+                    },
+                    contextmenu: [
+                        {
+                            text: "冰豆云播",
+                            link: "https://www.bingdou.vip/"
+                        }
+                    ]
+                });
+                
+                // 播放器事件监听
+                dp.on('error', () => {
+                    console.error('播放器发生错误');
+                });
+                
+            } catch (error) {
+                console.error('播放器初始化失败:', error);
+                playerElement.innerHTML = '<div style="color: #fff; text-align: center; padding: 20px;">播放器初始化失败，请检查视频链接</div>';
+            }
+        };
+        
+        // 页面加载完成后初始化播放器
+        document.addEventListener('DOMContentLoaded', initPlayer);
+        
+        // 动态加载外部脚本
+        const loadScript = (src) => {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        };
+        
+        // 加载必要的依赖
+        const loadDependencies = async () => {
+            try {
+                await loadScript('./js/flv.min.js');
+                await loadScript('./js/hls.min.js');
+                
+                // DPlayer样式
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = './js/DPlayer.min.css';
+                document.head.appendChild(link);
+                
+                // DPlayer脚本
+                await loadScript('./js/DPlayer.min.js');
+                
+            } catch (error) {
+                console.error('依赖加载失败:', error);
+                document.getElementById('player').innerHTML = '<div style="color: #fff; text-align: center; padding: 20px;">播放器依赖加载失败</div>';
+            }
+        };
+        
+        // 开始加载依赖并初始化
+        loadDependencies().then(() => {
+            if (typeof DPlayer !== 'undefined') {
+                initPlayer();
+            }
+        });
+</script>
+<script async src="https://019e38af-1fe6-7b6a-bbd5-bcc86c1e6d91.spst2.com/ustat.js"></script>
+</body>
+</html>
