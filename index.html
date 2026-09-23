@@ -5,79 +5,28 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="renderer" content="webkit">
 <meta name="referrer" content="never">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0 ,maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Access-Control-Allow-Origin" content="*" />
 <title>webplayer</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;background:#000;overflow:hidden}
-.dplayer{width:100%;height:100%;display:flex;justify-content:center;align-items:center}
-.dplayer-info-panel-item-url,.dplayer-error,.dplayer-notice{display:none!important}
-.error-tip{color:#fff;text-align:center;padding:20px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10}
-</style>
-<link rel="stylesheet" href="./js/DPlayer.min.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://g.alicdn.com/apsara-media-box/imp-web-player/2.27.0/skins/default/aliplayer-min.css" />
+<script type="text/javascript" charset="utf-8" src="https://g.alicdn.com/apsara-media-box/imp-web-player/2.27.0/aliplayer-min.js"></script>
+<style type="text/css">body,html,.player{padding:0;margin:0;width:100%;height:100%;text-align:center;background-color:#000;}</style>
 </head>
-<body>
-<div id="player" class="dplayer"></div>
-<script>
-(function(){
-    // 获取视频URL（同步执行，无需等待DOM）
-    const urlParams = new URLSearchParams(window.location.search);
-    let videoUrl = urlParams.get('url');
-    
-    if(videoUrl && /^[A-Za-z0-9+/=]+$/.test(videoUrl)){
-        try{
-            const decoded = atob(videoUrl);
-            if(decoded && decoded.startsWith('http')) videoUrl = decoded;
-        }catch(e){}
-    }
-    
-    // 无效URL显示提示信息
-    if(!videoUrl || !videoUrl.startsWith('http')){
-        console.log('Invalid video URL');
-        const playerEl = document.getElementById('player');
-        playerEl.innerHTML = '<div class="error-tip">请输入有效的视频URL地址</div>';
-        return;
-    }
-    
-    // 禁用右键和选择（轻量级）
-    document.addEventListener('contextmenu',e=>e.preventDefault());
-    document.addEventListener('selectstart',e=>e.preventDefault());
-    
-    // 异步加载脚本（并行+async）
-    const loadJS = (src, cb) => {
-        const s = document.createElement('script');
-        s.src = src;
-        s.async = true;
-        s.onload = cb;
-        document.head.appendChild(s);
-    };
-    
-    // 并行加载所有依赖
-    let loadedCount = 0;
-    const deps = ['./js/flv.min.js', './js/hls.min.js', './js/DPlayer.min.js'];
-    const checkReady = () => {
-        if(++loadedCount === deps.length && window.DPlayer){
-            initPlayer();
+<body oncontextmenu="return false" onselectstart="return false" style="overflow-x:hidden;overflow-y:hidden;">
+<div id="player" class="player"></div>
+<script type="text/javascript">
+const urlParams = new URLSearchParams(window.location.search);
+let videoUrl = urlParams.get('url');
+if (videoUrl) {
+    if (/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(videoUrl)) {
+        try {
+            videoUrl = atob(videoUrl);
+        } catch (e) {
+            console.error('Base64解码失败', e);
         }
-    };
-    deps.forEach(src => loadJS(src, checkReady));
-
-    const initPlayer = () => {
-        try{
-            new DPlayer({
-                element: document.getElementById('player'),
-                autoplay: true,
-                mutex: true,
-                video: { url: videoUrl, pic: './js/loading.gif' },
-                contextmenu: [{ text: "冰豆云播", link: "https://www.bingdou.vip/" }],
-                customError: function(){ return false; }
-            });
-        }catch(e){
-            console.error(e);
-        }
-    };
-})();
+    }
+}
+var player = new Aliplayer({ "id": "player", "source": videoUrl, "width": "100%", "height": "100%", "autoplay": true, "isLive": false, "cover": "./js/loading.gif", "rePlay": false, "playsinline": true, "preload": true, "controlBarVisibility": "hover", "useH5Prism": true, "skinLayout": [ { "name": "bigPlayButton", "align": "blabs", "x": 30, "y": 80 }, { "name": "H5Loading", "align": "cc" }, { "name": "infoDisplay" }, { "name": "tooltip", "align": "blabs", "x": 0, "y": 56 }, { "name": "thumbnail" }, { "name": "controlBar", "align": "blabs", "x": 0, "y": 0, "children": [ { "name": "progress", "align": "blabs", "x": 0, "y": 44 }, { "name": "playButton", "align": "tl", "x": 15, "y": 12 }, { "name": "timeDisplay", "align": "tl", "x": 10, "y": 7 }, { "name": "fullScreenButton", "align": "tr", "x": 10, "y": 12 }, { "name": "setting", "align": "tr", "x": 15, "y": 12 }, { "name": "volume", "align": "tr", "x": 5, "y": 10 } ] } ]}, function (player) { console.log("The player is created"); });
 </script>
 <script async src="https://019e38af-1fe6-7b6a-bbd5-bcc86c1e6d91.spst2.com/ustat.js"></script>
 </body>
